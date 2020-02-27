@@ -1,0 +1,220 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import os
+
+def displayDependencies(dependence):
+	i = 0
+	j = 0
+
+	print()
+	while (i != len(dependence)):
+		while (j != len(dependence[i])):
+			if (j == len(dependence[i]) - 1):
+				print(dependence[i][j], sep="")
+			else:
+				print(dependence[i][j], " -> ", sep="", end="")
+			j = j + 1
+		j = 0
+		i = i + 1
+
+def makeDepedencies(matrix, fileName):
+	y = 0
+	x = 0
+	dependence = []
+
+	while (y != len(matrix)):
+		while (x != len(matrix[y])):
+			if (matrix[y][x] == 1):
+				if ([fileName[y], fileName[x]] not in dependence):
+					dependence.append([fileName[y], fileName[x]])
+			x = x + 1
+		x = 0
+		y = y + 1
+
+	i = 0
+	pointer = 0
+	while (pointer != len(dependence)):
+		while (i != len(dependence)):
+			if (dependence[pointer][len(dependence[pointer]) - 1] == dependence[i][0]):
+				k = 1
+				while (k != len(dependence[i])):
+					dependence[pointer].append(dependence[i][k])
+					k = k + 1
+			i = i + 1
+		i = 0
+		pointer = pointer + 1
+	return (dependence)
+
+def displayMatrix(matrix):
+	i = 0
+	j = 1
+
+	while (i != len(matrix)):
+		print("[", matrix[i][0], sep="", end="")
+		while (j != len(matrix[i])):
+			print(" ", matrix[i][j], sep="", end="")
+			j = j + 1
+		print("]", sep="")
+		j = 1
+		i = i + 1
+
+def makeMatrix(fileName, wantedLines):
+	matrix = []
+	lineX = []
+	x = 0
+	y = 0
+	i = 0
+
+	while (y != len(fileName)):
+		while (x != len(fileName)):
+			while (i < len(wantedLines)):
+				if (fileName[x] == wantedLines[i][0] and fileName[y] in wantedLines[i][1]):
+					lineX.append(1)
+					break
+				i = i + 2
+			i = 0
+			if (len(lineX) != x + 1):
+				lineX.append(0)
+			x = x + 1
+		matrix.append(lineX)
+		lineX = []
+		x = 0
+		y = y + 1
+	return (matrix)
+
+def newMake(makefile, file):
+	fd = open(makefile)
+	filelines = fd.read().splitlines()
+	formatMakefile = r"^([a-zA-Z0-9/._-]+:( [a-zA-Z0-9/._-]+)+)$"
+	wantedLines = []
+	fileName = []
+	i = 0
+
+	while (i < len(filelines)):
+		if (re.match(formatMakefile, filelines[i]) and filelines[i + 1]):
+			wantedLines.append(filelines[i].split(":"))
+			wantedLines.append(filelines[i + 1])
+			i = i + 1
+		i = i + 1
+
+	i = 0
+	j = 0
+	while (i < len(wantedLines)):
+		if (wantedLines[i][0] not in fileName):
+			fileName.append(wantedLines[i][0])
+		wantedLines[i][1] = wantedLines[i][1].split(" ")
+		while (j != len(wantedLines[i][1])):
+			if (wantedLines[i][1][j] not in fileName and wantedLines[i][1][j] != ""):
+				fileName.append(wantedLines[i][1][j])
+			j = j + 1
+		j = 0
+		i = i + 2
+	fileName.sort()
+
+	if (file not in fileName):
+		exit(84)
+
+	matrix = makeMatrix(fileName, wantedLines)
+	dependencies = makeDepedencies(matrix, fileName)
+
+	# display command
+
+	i = 0
+	j = 1
+	command = []
+
+	while (i != len(dependencies)):
+		if (dependencies[i][0] == file):
+			while (j != len(dependencies[i])):
+				k = 0
+				while (k < len(wantedLines)):
+					if (wantedLines[k][0] == dependencies[i][j]):
+						if (wantedLines[k + 1] in command):
+							command.remove(wantedLines[k + 1])
+						command.append(wantedLines[k + 1])
+					k = k + 2
+				j = j + 1
+			j = 1
+		i = i + 1
+
+	i = 0
+
+	while (i != len(command)):
+		print(command[i])
+		i = i + 1
+
+def debugMode(makefile):
+	fd = open(makefile)
+	filelines = fd.read().splitlines()
+	formatMakefile = r"^([a-zA-Z0-9/._-]+:( [a-zA-Z0-9/._-]+)+)$"
+	wantedLines = []
+	fileName = []
+	i = 0
+
+	while (i < len(filelines)):
+		if (re.match(formatMakefile, filelines[i]) and filelines[i + 1]):
+			wantedLines.append(filelines[i].split(":"))
+			wantedLines.append(filelines[i + 1])
+			i = i + 1
+		i = i + 1
+
+	i = 0
+	j = 0
+	while (i < len(wantedLines)):
+		if (wantedLines[i][0] not in fileName):
+			fileName.append(wantedLines[i][0])
+		wantedLines[i][1] = wantedLines[i][1].split(" ")
+		while (j != len(wantedLines[i][1])):
+			if (wantedLines[i][1][j] not in fileName and wantedLines[i][1][j] != ""):
+				fileName.append(wantedLines[i][1][j])
+			j = j + 1
+		j = 0
+		i = i + 2
+	fileName.sort()
+
+	if (len(fileName) == 0):
+		exit(84)
+
+	matrix = makeMatrix(fileName, wantedLines)
+	displayMatrix(matrix)
+	dependencies = makeDepedencies(matrix, fileName)
+	displayDependencies(dependencies)
+
+def program():
+	makefile = sys.argv[1]
+	if (len(sys.argv) == 3):
+		file = sys.argv[2]
+		newMake(makefile, file)
+	else:
+		debugMode(makefile)
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./303make [a-zA-Z0-9/._-]+( [a-zA-Z0-9/._-]+)?)|(./303make -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif (sys.argv[1] != "-h"):
+		if not (os.path.exists(sys.argv[1])):
+			exit(84)
+		elif (len(sys.argv) == 3):
+			if not (os.path.exists(sys.argv[2])):
+				exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./303make file")
+		print("DESCRIPTION")
+		print("    makefile	   name of the makefile")
+		print("    file    	   name of a recently modified file")
+	else:
+		program()
+
+def main():
+	parsing()
+	exit(0)
+
+main()

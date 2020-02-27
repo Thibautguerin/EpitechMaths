@@ -1,0 +1,166 @@
+#!/usr/bin/python3
+
+import re
+import sys
+import csv
+from math import *
+
+def display(name, res):
+    i = 0
+
+    print("Country: ", end="")
+    while (i != len(name)):
+        if (i + 1 == len(name)):
+            print(name[i])
+        else:
+            print(name[i] + ", ", end="")
+        i = i + 1
+    print("Fit1")
+    if (res[1] > 0):
+        print("    Y = ", '{:.2f}'.format(res[0]), " X + ", '{:.2f}'.format(res[1]), sep="")
+    else:
+        print("    Y = ", '{:.2f}'.format(res[0]), " X - ", '{:.2f}'.format(-res[1]), sep="")
+    print("    Root-mean-square deviation: ", '{:.2f}'.format(res[2]), sep="")
+    print("    Population in 2050: ", '{:.2f}'.format(res[3]), sep="")
+    print("Fit2")
+    if (res[5] > 0):
+        print("    X = ", '{:.2f}'.format(res[4]), " Y + ", '{:.2f}'.format(res[5]), sep="")
+    else:
+        print("    X = ", '{:.2f}'.format(res[4]), " Y - ", '{:.2f}'.format(-res[5]), sep="")
+    print("    Root-mean-square deviation: ", '{:.2f}'.format(res[6]), sep="")
+    print("    Population in 2050: ", '{:.2f}'.format(res[7]), sep="")
+    print("Correlation: ", '{:.4f}'.format(res[8]), sep="")
+
+def mean(data, i, mean_x, mean_y):
+    x = 2
+
+    while (x != len(data[i])):
+        mean_x = mean_x + int(data[0][x])
+        mean_y = mean_y + int(data[i][x]) / 1000000
+        x = x + 1
+    mean_x = mean_x / (len(data[0]) - 2)
+    mean_y = mean_y / (len(data[0]) - 2)
+    return ([mean_x, mean_y])
+
+def linear_fit_y(data, i, res, mean_t):
+    x = 2
+    d1 = 0.0
+    d2 = 0.0
+
+    while (x != len(data[i])):
+        d1 = d1 + (int(data[0][x]) - mean_t[0]) * (int(data[i][x]) - mean_t[1])
+        d2 = d2 + pow(int(data[0][x]) - mean_t[0], 2)
+        x = x + 1
+    res[0] = res[0] + d1 / d2
+    res[1] = res[1] + mean_t[1] * 1000000 - (d1 / d2) * mean_t[0]
+    return (res)
+
+def linear_fit_x(data, i, res, mean_t):
+    x = 2
+    d1 = 0.0
+    d2 = 0.0
+
+    while (x != len(data[i])):
+        d1 = d1 + (int(data[i][x]) - mean_t[1] * 1000000) * (int(data[0][x]) - mean_t[0])
+        d2 = d2 + pow(int(data[i][x]) - mean_t[1] * 1000000, 2)
+        x = x + 1
+    res[4] = res[4] + d1 / d2
+    res[5] = res[5] + mean_t[0] - (d1 / d2) * mean_t[1] * 1000000
+    return (res)
+
+def root_fit1(data, i, res):
+    x = 2
+    root = 0.0
+
+    while (x != len(data[i])):
+        root = root + pow((float(data[i][x]) / 1000000) - ((res[0] / 1000000) * int(data[0][x]) + (res[1] / 1000000)), 2)
+        x = x + 1
+    res[2] = res[2] + sqrt(root / (len(data[0]) - 2))
+    return (res)
+
+def root_fit2(data, i, res):
+    x = 2
+    root1 = 0.0
+
+    while (x != len(data[i])):
+        root1 = root1 + pow((float(data[i][x]) / 1000000) - (((res[5]) - int(data[0][x])) / -(res[4] * 1000000)), 2)
+        x = x + 1
+    res[6] = res[6] + sqrt(root1 / (len(data[0]) - 2))
+    return (res)
+
+def correlation(data, i, mean_t, res):
+    x = 2
+    root_mean_x = 0.0
+    root_mean_y = 0.0
+    mean_p = 0.0
+    product_m = 0.0
+
+    while (x != len(data[i])):
+        mean_p = mean_p + (int(data[i][x]) / 1000000 * int(data[0][x]))
+        root_mean_x = root_mean_x + pow(int(data[0][x]), 2)
+        root_mean_y = root_mean_y + pow(int(data[i][x]) / 1000000, 2)
+        x = x + 1
+    mean_p = mean_p / (len(data[0]) - 2)
+    root_mean_x = root_mean_x / (len(data[0]) - 2)
+    root_mean_y = root_mean_y / (len(data[0]) - 2)
+    res[8] = res[8] + (mean_p - (mean_t[0] * mean_t[1])) / sqrt((root_mean_x - pow(mean_t[0], 2)) * (root_mean_y - pow(mean_t[1], 2)))
+    return (res)
+
+def convert(res, data):
+    res[0] = res[0] / 1000000
+    res[1] = res[1] / 1000000
+    res[2] = res[2] / (len(sys.argv) - 1)
+    res[3] = res[0] * 2050 + res[1]
+    res[4] = res[4] * 1000000
+    res[5] = res[5]
+    res[6] = res[6] / (len(sys.argv) - 1)
+    res[7] = (res[5] - 2050) / -res[4]
+    res[8] = res[8] / (len(sys.argv) - 1)
+    return (res)
+
+def program():
+    i = 0;
+    j = 1;
+    name = [];
+    res = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+    mean_t = [0.0, 0.0]
+
+    with open("207demography_data.csv", newline='') as csvfile:
+        data = list(csv.reader(csvfile, delimiter=";"))
+    while (i != len(data)):
+        while (j != len(sys.argv)):
+            if (sys.argv[j] == data[i][1]):
+                name.append(data[i][0])
+                mean_t = mean(data, i, mean_t[0], mean_t[1])
+                res = linear_fit_y(data, i, res, mean_t)
+                res = linear_fit_x(data, i, res, mean_t)
+                res = root_fit1(data, i, res)
+                res = root_fit2(data, i, res)
+                res = correlation(data, i, mean_t, res)
+                mean_t = [0.0, 0.0]
+            j = j + 1
+        j = 1
+        i = i + 1
+    res = convert(res, data)
+    display(name, res)
+
+def parsing():
+    string = (" ".join(sys.argv))
+
+    regexp = r"^((./207demography( [A-Z]{3})+)|(./207demography -h))$"
+
+    if (re.match(regexp, string) is None):
+        exit(84)
+    elif (sys.argv[1] == "-h"):
+        print("USAGE")
+        print("    ./207demography code [...]\n")
+        print("DESCRIPTION")
+        print("    code    country code")
+    else:
+        program()
+
+def main():
+    parsing()
+    exit(0)
+
+main()

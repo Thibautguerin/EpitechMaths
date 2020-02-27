@@ -1,0 +1,107 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import time
+import re
+import sys
+
+def display(result):
+	n = 0
+	overload = 0
+
+	while (n < 48):
+		print(n, " -> ", '{:.3f}'.format(result[n]), sep="", end="\t")
+		print(n + 1, " -> ", '{:.3f}'.format(result[n + 1]), sep="", end="\t")
+		print(n + 2, " -> ", '{:.3f}'.format(result[n + 2]), sep="", end="\t")
+		print(n + 3, " -> ", '{:.3f}'.format(result[n + 3]), sep="", end="\t")
+		print(n + 4, " -> ", '{:.3f}'.format(result[n + 4]), sep="", end="\t")
+		print(n + 5, " -> ", '{:.3f}'.format(result[n + 5]), sep="")
+		n = n + 6
+	print(n, " -> ", '{:.3f}'.format(result[n]), sep="", end="\t")
+	print(n + 1, " -> ", '{:.3f}'.format(result[n + 1]), sep="", end="\t")
+	print(n + 2, " -> ", '{:.3f}'.format(result[n + 2]), sep="")
+
+	n = 0
+
+	while (n <= 25):
+		overload = overload + result[n]
+		n = n + 1
+	overload = (1 - overload) * 100
+	print("overload:  ",'{:.1f}'.format(overload),"%",sep="")
+
+def binomial(d):
+	k = 0
+	n = 3500
+	p = d / (3600 * 8)
+	result = []
+
+	start = time.time()
+	while (k <= 50):
+		result.append(int(factorial(n) // (factorial(k) * factorial(n - k))) * pow(p, k) * pow(1 - p, n - k))
+		k = k + 1
+	end = time.time()
+	display(result)
+	return (float(end - start))
+
+def poisson(d):
+	k = 0
+	n = 3500
+	l = d / (3600 * 8) * 3500
+	result = []
+
+	start = time.time()
+	while (k <= 50):
+		result.append(e**(-l) * pow(l, k) / factorial(k))
+		k = k + 1
+	end = time.time()
+	display(result)
+	return (float(end - start))
+
+def calcul():
+	d = int(sys.argv[1])
+	time = 0
+	print("Binomial distribution:")
+	time = binomial(d)
+	print("computation time:  ",'{:.2f}'.format(time)," ms",sep="")
+	print()
+
+	print("Poisson distribution:")
+	time = poisson(d)
+	print("computation time:  ",'{:.2f}'.format(time)," ms",sep="")
+
+def probs():
+	n = int(sys.argv[1])
+	k = int(sys.argv[2])
+	result = int(factorial(n) // (factorial(k) * factorial(n - k)))
+	print(k,"-combination of a ",n," set:",sep="")
+	print(int(result))
+
+def error_management():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./203hotline (([0-9]+ [0-9]+)|([0-9]+)))|(./203hotline -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("        ./203hotline [n k | d]\n")
+		print("DESCRIPTION")
+		print("        n   n value for the computation of (nk)")
+		print("        k   k value for the computation of (nk)")
+		print("        d   average duration of calls (in seconds)")
+		exit(0)
+
+	if (int(sys.argv[1]) and len(sys.argv) == 2):
+		calcul()
+	elif (int(sys.argv[1]) and int(sys.argv[2]) and int(sys.argv[1]) > int(sys.argv[2])):
+		probs()
+	else:
+		exit(84)
+
+def main():
+	error_management()
+	exit(0)
+
+main()

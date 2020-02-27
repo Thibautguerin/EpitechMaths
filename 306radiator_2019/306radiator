@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import os
+
+def program():
+	return
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./306radiator [0-9]+ [0-9]+ [0-9]+( [0-9]+ [0-9]+)?)|(./306radiator -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	if (int(sys.argv[1]) < int(sys.argv[2]) or int(sys.argv[1]) < int(sys.argv[3])):
+		exit(84)
+	if (len(sys.argv) == 6 and (int(sys.argv[1]) < int(sys.argv[4]) or int(sys.argv[1]) < int(sys.argv[5]))):
+		exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./306radiator n ir jr [i j]")
+		print("DESCRIPTION")
+		print("    n	   	size of the room")
+		print("    (ir, jr)	coordinates of the radiator")
+		print("    (i, j)	coordinates of a point in the room")
+	else:
+		program()
+
+def main():
+	parsing()
+	exit(0)
+
+main()

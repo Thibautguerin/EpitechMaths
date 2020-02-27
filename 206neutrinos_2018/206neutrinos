@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import re
+import sys
+
+def display(res):
+    print("    Number of values:   ", res[0], sep="")
+    print("    Standard deviation: ", '{:.2f}'.format(res[1]), sep ="")
+    print("    Arithmetic mean:    ", '{:.2f}'.format(res[2]), sep ="")
+    print("    Root mean square:   ", '{:.2f}'.format(res[3]), sep ="")
+    print("    Harmonic mean:      ", '{:.2f}'.format(res[4]), "\n", sep ="")
+
+def calculs(res, number):
+    new_res = [0, 0, 0, 0, 0]
+    
+    new_res[0] = res[0] + 1
+    new_res[2] = (res[0] * res[2] + number) / new_res[0]
+    new_res[1] = sqrt(((((pow(res[1], 2) + pow(res[2], 2)) * res[0]) + pow(number, 2)) / new_res[0]) - pow(new_res[2], 2))
+    new_res[3] = sqrt((((pow(res[1], 2) + pow(res[2], 2)) * res[0]) + pow(number, 2)) / new_res[0])
+    new_res[4] = new_res[0] / (1 / number + (res[0]) / res[4])
+    return (new_res)
+
+def program():
+    number = ""
+    parsing = r"^([1-9][0-9]+(\.[0-9]+)?)$"
+    res = [int(sys.argv[1]), float(sys.argv[4]), float(sys.argv[2]), 0, float(sys.argv[3])]
+
+    while (number != "END"):
+        number = input("Enter next value: ")
+        if (re.match(parsing, number) is None):
+            continue;
+        else:
+            res = calculs(res, float(number))
+            display(res)
+
+def parsing():
+    string = (" ".join(sys.argv))
+
+    regexp = r"^((./206neutrinos [0-9]+ [0-9]+ [0-9]+ [0-9]+)|(./206neutrinos -h))$"
+
+    if (re.match(regexp, string) is None):
+        exit(84)
+    elif (sys.argv[1] == "-h"):
+        print("USAGE")
+        print("    ./206neutrinos -h\n")
+        print("DESCRIPTION")
+        print("    n          number of values")
+        print("    a          arithmetic mean")
+        print("    h          harmonic mean")
+        print("    sd         standard deviation")
+    elif (int(sys.argv[3]) < int(sys.argv[2])):
+        exit(84)
+    else:
+        program()
+
+def main():
+    parsing()
+    exit(0)
+
+main()

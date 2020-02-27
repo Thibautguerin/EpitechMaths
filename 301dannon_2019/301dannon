@@ -1,0 +1,152 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import csv
+import os
+
+def selection(data):
+	data = list(data)
+	comp = 0
+	i = 0
+	j = 0
+	min_value = 0
+
+	while (i != len(data) - 1):
+		while (j + 1 != len(data)):
+			if (float(data[j]) > float(data[min_value])):
+				min_value = j
+			comp = comp + 1
+			j = j + 1
+		data[i], data[min_value] = data[min_value], data[i]
+		i = i + 1
+		j = i
+		min_value = i
+	print("Selection sort:", comp, "comparisons")
+
+def insertion(data):
+	data = list(data)
+	comp = 0
+	i = 0
+	j = 0
+
+	while (i != len(data)):
+		j = i
+		while (j >= 1):
+			comp = comp + 1
+			if (float(data[j - 1]) <= float(data[j])):
+				data[j], data[j - 1] = data[j - 1], data[j]
+				j = j - 1
+			else:
+				break
+		i = i + 1
+	print("Insertion sort:", comp, "comparisons")
+
+def bubble(data):
+	data = list(data)
+	comp = 0
+	i = 1
+	j = 0
+
+	while (i != len(data)):
+		while(j != len(data) - i):
+			if (float(data[j]) > float(data[j - 1])):
+				data[j], data[j - 1] = data[j - 1], data[j]
+			comp = comp + 1
+			j = j + 1
+		j = 0
+		i = i + 1
+	print("Bubble sort:", comp, "comparisons")
+
+def quick(data, low, high):
+	print("Quicksort:", comp, "comparisons")
+
+comp = 0
+
+def merge2(data):
+	global comp
+	if (len(data) > 1):
+		mid = len(data) // 2
+		div1 = data[:mid]
+		div2 = data[mid:]
+
+		div1 = merge2(div1)
+		div2 = merge2(div2)
+
+		i = 0
+		j = 0
+		k = 0
+
+		while (i < len(div1) and j < len(div2)):
+			if (div1[i] < div2[j]):
+				data[k] = div1[i]
+				i = i + 1
+			else:
+				data[k] = div2[j]
+				j = j + 1
+			comp = comp + 1
+			k = k + 1
+
+		while (i < len(div1)):
+			data[k] = div1[i]
+			i = i + 1
+			k = k + 1
+
+		while (j < len(div2)):
+			data[k] = div2[j]
+			j = j + 1
+			k = k + 1
+
+	return (data)
+
+def merge(data):
+	data = list(data)
+	data = merge2(data)
+
+	print("Merge sort:", comp, "comparisons")
+
+def program():
+	with open(sys.argv[1], newline='') as datafile:
+		data = list(csv.reader(datafile, delimiter=" "))
+	if (len(data) != 0):
+		verif = r"^([+-]?[0-9]+([.][0-9]+)?)$"
+		i = 0
+		while (i != len(data[0])):
+			if (re.match(verif, data[0][i]) is None):
+				exit(84)
+			i = i + 1
+		if (len(data[0]) > 1):
+			print(len(data[0]), "elements")
+		else:
+			print(len(data[0]), "element")
+		selection(data[0])
+		insertion(data[0])
+		bubble(data[0])
+		quick(data[0], 0, len(data) - 1)
+		merge(data[0])
+	else:
+		exit(84)
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./301dannon [a-zA-Z0-9/._-]+)|(./301dannon -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif not (os.path.exists(sys.argv[1])):
+		exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./301dannon file")
+		print("DESCRIPTION")
+		print("    file    file that contains the number to be sorted, seperated by spaces")
+	else:
+		program()
+
+def main():
+	parsing()
+	exit(0)
+
+main()

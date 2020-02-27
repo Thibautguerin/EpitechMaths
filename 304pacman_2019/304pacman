@@ -1,0 +1,142 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import os
+
+def verif(paths, pos):
+	i = 0
+
+	while (i != len(paths)):
+		if (paths[i].count(pos) != 0):
+			return (False)
+		i = i + 1
+	return (True)
+
+def pathFinding(file, void):
+	lines = file.splitlines()
+	paths = []
+	Fpos = []
+	status = False
+	x = 0
+	y = 0
+	i = 0
+	j = 0
+	
+	if (file.count("F") == 0):
+		print(file)
+	else:
+		while (y != len(lines)):
+			if (lines[y].count("F") != 0):
+				while (x != len(lines[y])):
+					if (lines[y][x] == "F"):
+						Fpos.append([x, y])
+					x = x + 1
+				x = 0
+			y = y + 1
+		paths.append(Fpos)
+
+		while (paths[i] != "END" and len(paths[i]) != 0):
+			tmp = []
+			while (j != len(paths[i])):
+				# print(paths[i][j])
+				# print(paths[i][j][1] - 1, paths[i][j][0])
+				# print(paths[i][j][1], paths[i][j][0] + 1)
+				# print(paths[i][j][1] + 1, paths[i][j][0])
+				# print(paths[i][j][1], paths[i][j][0] - 1)
+				
+				# north
+				if (paths[i][j][0] < len(lines[paths[i][j][1] - 1]) and lines[paths[i][j][1] - 1][paths[i][j][0]] == 'P'):
+					tmp = "END"
+					break
+				elif (paths[i][j][0] < len(lines[paths[i][j][1] - 1]) and  lines[paths[i][j][1] - 1][paths[i][j][0]] == void):
+					if (verif(paths, [paths[i][j][0], paths[i][j][1] - 1])):
+						tmp.append([paths[i][j][0], paths[i][j][1] - 1])
+						lines[paths[i][j][1] - 1] = lines[paths[i][j][1] - 1][:paths[i][j][0]] + str((i + 1)%10) + lines[paths[i][j][1] - 1][paths[i][j][0] + 1:]
+				#east
+				if (paths[i][j][0] + 1 < len(lines[paths[i][j][1]]) and lines[paths[i][j][1]][paths[i][j][0] + 1] == 'P'):
+					tmp = "END"
+					break
+				elif (paths[i][j][0] + 1 < len(lines[paths[i][j][1]]) and lines[paths[i][j][1]][paths[i][j][0] + 1] == void):
+					if (verif(paths, [paths[i][j][0] + 1, paths[i][j][1]])):
+						tmp.append([paths[i][j][0] + 1, paths[i][j][1]])
+						lines[paths[i][j][1]] = lines[paths[i][j][1]][:paths[i][j][0] + 1] + str((i + 1)%10) + lines[paths[i][j][1]][paths[i][j][0] + 2:]
+
+				#south
+				if (paths[i][j][0] < len(lines[paths[i][j][1] + 1]) and lines[paths[i][j][1] + 1][paths[i][j][0]] == 'P'):
+					tmp = "END"
+					break
+				elif (paths[i][j][0] < len(lines[paths[i][j][1] + 1]) and lines[paths[i][j][1] + 1][paths[i][j][0]] == void):
+					if (verif(paths, [paths[i][j][0], paths[i][j][1] + 1])):
+						tmp.append([paths[i][j][0], paths[i][j][1] + 1])
+						lines[paths[i][j][1] + 1] = lines[paths[i][j][1] + 1][:paths[i][j][0]] + str((i + 1)%10) + lines[paths[i][j][1] + 1][paths[i][j][0] + 1:]
+
+				#west
+				if (paths[i][j][0] - 1 >= 0 and lines[paths[i][j][1]][paths[i][j][0] - 1] == 'P'):
+					tmp = "END"
+					break
+				elif (paths[i][j][0] - 1 >= 0 and lines[paths[i][j][1]][paths[i][j][0] - 1] == void):
+					if (verif(paths, [paths[i][j][0] - 1, paths[i][j][1]])):
+						tmp.append([paths[i][j][0] - 1, paths[i][j][1]])
+						lines[paths[i][j][1]] = lines[paths[i][j][1]][:paths[i][j][0] - 1] + str((i + 1)%10) + lines[paths[i][j][1]][paths[i][j][0]:]
+
+				j = j + 1
+				# print("tmp:", tmp)
+			j = 0
+			paths.append(tmp)
+			# print(paths[i])
+			i = i + 1
+		print("\n".join(lines))
+
+def program(file, wall, void):
+	fd = open(file)
+	lines = fd.read().splitlines()
+	cnt = len(lines)
+	fd.close()
+	fd = open(file)
+	filelines = fd.read()
+	fd.close()
+
+	if (filelines.count('F') != 1 or filelines.count('P') != 1):
+		exit(84)
+
+	if (filelines.count('0') + filelines.count('1') + filelines.count('F') + filelines.count('P') + cnt != len(filelines) or len(filelines) == 0):
+		exit(84)
+
+	if (len(lines[0]) * (cnt - lines.count("")) != len(filelines) - cnt):
+		exit(84)
+	filechange = filelines.replace("1", wall).replace("0", void)
+	pathFinding(filechange, void)
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./304pacman [a-zA-Z0-9/._-]+ . .)|(./304pacman -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif (sys.argv[1] != "-h" and len(sys.argv) == 4 and (sys.argv[2] == "F" or sys.argv[3] == "F" or sys.argv[2] == "P" or sys.argv[3] == "P" or sys.argv[2] == sys.argv[3])):
+		exit(84)
+	elif (sys.argv[1] != "-h"):
+		if not (os.path.exists(sys.argv[1])):
+			exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./304pacman file c1 c2")
+		print("DESCRIPTION")
+		print("    file	   	file describing the board, using the following characters:")
+		print("    				\'0\' for an empty square,")
+		print("    				\'1\' for a wall,")
+		print("					\'F\' for the ghost's position,")
+		print("					\'P\' for Pacman's position.")
+		print("    c1		character to display for a wall.")
+		print("    c2		character to display for an empty space.")
+	else:
+		program(sys.argv[1], sys.argv[2], sys.argv[3])
+
+def main():
+	parsing()
+	exit(0)
+
+main()

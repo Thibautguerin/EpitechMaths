@@ -1,0 +1,84 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import time
+import re
+import sys
+
+def display(result):
+	print("Average return time: ", result[0], sep="")
+	print("Standard deviation: ", result[1], sep="")
+	print("Time after which 50% of the ducks are back: ", result[2], sep="")
+	print("Time after which 99% of the ducks are back: ", result[3], sep="")
+	print("Percentage of ducks back after 1 minute: ", '{:.1f}'.format(result[4]), "%", sep="")
+	print("Percentage of ducks back after 2 minutes: ", '{:.1f}'.format(result[5]), "%", sep="")
+
+def get_average(a):
+	# i = float(1)
+	# going = 0
+	# m = 0
+	# res = 0
+
+	# while (going != 1000):
+	# 	res = res + i
+	# 	# while (1):
+	# 	# 	if (density(a, i / 60) - density(a, 0) >= m):
+	# 	# 		res = res + i
+	# 	# 		break
+	# 	# 	i = i + 0.001
+	# 	# i = float(1)
+	# 	# m = m + 0.001
+	# 	going = going + 1
+
+	# res = res / 1000
+	# i = res
+	# i = i + sqrt(i)
+	# return (str(int(i / 60)) + "m " + str(int(i % 60 / 10)) + str(int(i % 10)) + "s")
+	return (a)
+
+def time_back(a, m):
+	i = float(1)
+
+	while (1):
+		if (density(a, i / 60) - density(a, 0) >= m):
+			break
+		i = i + 0.01
+	return (str(int(i / 60)) + "m " + str(int(i % 60 / 10)) + str(round(i % 10)) + "s")
+
+def density(a, t):
+	return (-a * exp(-t) - (4 - 3 * a) / 2 * exp(-2 * t) - (2 * a - 4) / 4 * exp(-4 * t))
+
+def calcul():
+	a = float(sys.argv[1])
+	
+	average = get_average(a)
+	deviation = a
+	time50 = time_back(a, 0.5)
+	time99 = time_back(a, 0.99)
+	percent_back1 = (density(a, 1) - density(a, 0)) * 100
+	percent_back2 = (density(a, 2) - density(a, 0)) * 100
+	
+	display([average, deviation, time50, time99, percent_back1, percent_back2])
+
+def error_management():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./204ducks ([0-9]+([.][0-9]+)?))|(./204ducks -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./204ducks a\n")
+		print("DESCRIPTION")
+		print("    a       constant")
+	elif (float(sys.argv[1]) <= 0 or float(sys.argv[1]) >= 2.5):
+		exit(84)
+	else:
+		calcul()
+def main():
+	error_management()
+	exit(0)
+
+main()

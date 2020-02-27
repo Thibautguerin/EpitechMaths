@@ -1,0 +1,150 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import re
+import sys
+
+def marginal():
+	a = int(sys.argv[1])
+	b = int(sys.argv[2])
+	x = 10
+	y = 10
+	calcul = float(0)
+	total = 0
+	tab = []
+	i = int(0)
+	divisor = (5 * a - 150) * (5 * b - 150)
+	x_total = []
+
+	print("------------------------------------------------------------")
+	print("         X=10     X=20     X=30     X=40     X=50     Y law")
+	while (y <= 50):
+		while (x <= 50):
+			tab.append(float(((a - x) * (b - y)) / divisor))
+			x = x + 10
+		total = tab[i] + tab[i + 1] + tab[i + 2] + tab[i + 3] + tab[i + 4]
+		print("Y=",y,"     ",'{:.3f}'.format(tab[i]),"    ",'{:.3f}'.format(tab[i + 1]),"    ",'{:.3f}'.format(tab[i + 2]), "    ",'{:.3f}'.format(tab[i + 3]),"    ",'{:.3f}'.format(tab[i + 4]),"    ",'{:.3f}'.format(total),sep="")
+		x = 10
+		i = i + 5
+		y = y + 10
+	i = 0
+	while (i <= 4):
+		x_total.append(float(tab[i] + tab[i + 5] + tab[i + 10] + tab[i + 15] + tab[i + 20]))
+		i = i + 1
+	print("X law    ",'{:.3f}'.format(x_total[0]),"    ",'{:.3f}'.format(x_total[1]),"    ",'{:.3f}'.format(x_total[2]),"    ",'{:.3f}'.format(x_total[3]),"    ",'{:.3f}'.format(x_total[4]),"    1",sep="")
+	print("------------------------------------------------------------")
+	return (tab)
+
+def law_z(tab):
+	p20 = tab[0]
+	p30 = tab[5] + tab[1]
+	p40 = tab[2] + tab[6] + tab[10]
+	p50 = tab[3] + tab[7] + tab[11] + tab[15]
+	p60 = tab[4] + tab[8] + tab[12] + tab[16] + tab[20]
+	p70 = tab[9] + tab[13] + tab[17] + tab[21]
+	p80 = tab[14] + tab[18] + tab[22]
+	p90 = tab[19] + tab[23]
+	p100 = tab[24]
+	print("z         20       30       40       50       60       70       80       90       100      total")
+	print("p(Z=z)    ",'{:.3f}'.format(p20),"    ",'{:.3f}'.format(p30),"    ",'{:.3f}'.format(p40),"    ",'{:.3f}'.format(p50),"    ",'{:.3f}'.format(p60),"    ",'{:.3f}'.format(p70),"    ",'{:.3f}'.format(p80),"    ",'{:.3f}'.format(p90),"    ",'{:.3f}'.format(p100),"    1",sep="")
+	print("------------------------------------------------------------")
+
+def esperance_x(tab):
+	ex = float(0)
+	i = 0
+	x = 10
+	y = 10
+
+	while (y <= 50):
+		while (x <= 50):
+			ex = ex + x * tab[i]
+			x = x + 10
+			i = i + 1
+		x = 10
+		y = y + 10
+	return (ex)
+
+def esperance_y(tab):
+	ey = float(0)
+	i = 0
+	x = 10
+	y = 10
+
+	while (y <= 50):
+		while (x <= 50):
+			ey = ey + y * (tab[i])
+			i = i + 1
+			x = x + 10
+		x = 10
+		y = y + 10
+	return (ey)
+
+def variance_x(tab, ex):
+	vx = float(0)
+	i = 0
+	x = 10
+
+	while (x <= 50):
+		vx = vx + (x - ex)**2 * (tab[i] + tab[i + 5] + tab[i + 10] + tab[i + 15] + tab[i + 20])
+		x = x + 10
+		i = i + 1
+	return (vx)
+
+def variance_y(tab, ey):
+	vy = float(0)
+	i = 0
+	y = 10
+
+	while (y <= 50):
+		vy = vy + (y - ey)**2 * (tab[i] + tab[i + 1] + tab[i + 2] + tab[i + 3] + tab[i + 4])
+		y = y + 10
+		i = i + 5
+	return (vy)
+
+def variances(tab):
+	ex = esperance_x(tab)
+	ey = esperance_y(tab)
+	ez = ex + ey
+	vx = variance_x(tab, ex)
+	vy = variance_y(tab, ey)
+	vz = vx + vy
+
+	print("expected value of X:    ",'{:.1f}'.format(ex),sep="")
+	print("variance of X:          ",'{:.1f}'.format(vx),sep="")
+	print("expected value of Y:    ",'{:.1f}'.format(ey),sep="")
+	print("variance of Y:          ",'{:.1f}'.format(vy),sep="")
+	print("expected value of Z:    ",'{:.1f}'.format(ez),sep="")
+	print("variance of Z:          ",'{:.1f}'.format(vz),sep="")
+	print("------------------------------------------------------------")
+
+def calcul():
+	tab = marginal()
+	law_z(tab)
+	variances(tab)
+
+def error_management():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./202unsold [0-9]+ [0-9]+)|(./202unsold -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("        ./202unsold a b\n")
+		print("DESCRIPTION")
+		print("        a   constant computed from the past results")
+		print("        b   constant computed from the past results")
+		exit(0)
+
+	if (int(sys.argv[1]) >= 50 and int(sys.argv[2]) >= 50):
+		calcul()
+	else:
+		exit(84)
+
+def main():
+	error_management()
+	exit(0)
+
+main()

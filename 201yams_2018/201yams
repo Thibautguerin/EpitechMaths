@@ -1,0 +1,178 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import re
+import sys
+
+def error_management():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./201yams ([0-6] ){5}((pair_[1-6])|(three_[1-6])|(four_[1-6])|(full_[1-6]_[1-6])|(straight_[5-6])|(yams_[1-6])))|(./201yams -h))$"
+
+	if (re.match(regexp, string) is None):
+	    exit(84)
+
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("        ./201yams d1 d2 d3 d4 d5 c\n")
+		print("DESCRIPTION")
+		print("        d1   value of the first die (0 if not thrown)")
+		print("        d2   value of the second die (0 if not thrown)")
+		print("        d3   value of the third die (0 if not thrown)")
+		print("        d4   value of the fourth die (0 if not thrown)")
+		print("        d5   value of the fifth die (0 if not thrown)")
+		print("        c    expected combination")
+		exit(0)
+
+	if (sys.argv[1] == "0" or sys.argv[2] == "0" or sys.argv[3] == "0" or sys.argv[4] == "0" or sys.argv[5] == "0"):
+		if (sys.argv[1] == "0" and sys.argv[2] == "0" and sys.argv[3] == "0" and sys.argv[4] == "0" and sys.argv[5] == "0"):
+			return
+		else:
+			exit(84)
+
+	if (re.match(r"^(full_[1-6]_[1-6])$", sys.argv[6])):
+		tab = sys.argv[6].split("_")
+
+		if (tab[1] == tab[2]):
+			exit(84)
+
+def combinaison(n, k):
+	nb = 0
+	buff = k
+	div = 1
+	while (buff > 0):
+		div = div * (n)
+		buff = buff - 1
+		n = n - 1
+	nb = div / factorial(k)
+	return (nb)
+
+def same_value(tab):
+	number = [int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]
+	prob = float(0)
+	counter = 5
+	n = number.count(int(tab[1]))
+	nb_dice = 5 - n
+
+	if (tab[0] == "pair"):
+		counter = 2
+		if (n >= counter):
+			prob = 1
+		elif (n == 0):
+			prob = 5**(5 - 2) * combinaison(5, 2) + 5**(5 - 3) * combinaison(5, 3) + 5**(5 - 4) * combinaison(5, 4) + combinaison(5, 5)
+		else:
+			prob = 6**nb_dice - 5**nb_dice
+
+	elif (tab[0] == "three"):
+		counter = 3
+		if (n >= counter):
+			prob = 1
+		elif (n == 0):
+			prob = 5**(5 - 3) * combinaison(5, 3) + 5**(5 - 4) * combinaison(5, 4) + combinaison(5, 5)
+		elif (n == 1):
+			prob = 5**(4 - 2) * combinaison(4, 2) + 5**(4 - 3) * combinaison(4, 3) + combinaison(4, 4)
+		else:
+			prob = 6**nb_dice - 5**nb_dice
+
+	elif (tab[0] == "four"):
+		counter = 4
+		if (n >= counter):
+			prob = 1
+		elif (n == 0):
+			prob = 5**(5 - 4) * combinaison(5, 4) + combinaison(5, 5)
+		elif (n == 1):
+			prob = 5**(4 - 3) * combinaison(4, 3) + combinaison(4, 4)
+		elif (n == 2):
+			prob = 5**(3 - 2) * combinaison(3, 2) + combinaison(3, 3)
+		else:
+			prob = 6**nb_dice - 5**nb_dice
+
+	else:
+		if (number.count(int(tab[1])) >= counter):
+			prob = 1
+		else:
+			prob = (1 / 6)**(5 - n)
+			return (prob * 100)
+	if (prob == 1):
+		return (prob * 100)
+	return (prob / 6**(5 - n) * 100)
+
+def straight(tab):
+	number = [int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]
+	prob = float(1)
+	n = 0
+	i = 0
+	j = 0
+	buff = [1, 2, 3, 4, 5]
+	
+	if (int(tab[1]) == 6):
+		buff = [2, 3, 4, 5, 6]
+	while (i != len(number)):
+		while (j != len(buff)):
+			if (number[i] == buff[j]):
+				buff[j] = 0
+				n = n + 1
+			j = j + 1
+		j = 0
+		i = i + 1
+	if (n == 5):
+		prob = 1
+	else:
+		n = 5 - n
+		while (n != 0):
+			prob = prob * n / 6
+			n = n - 1
+	return (prob * 100)
+
+def full(tab):
+	number = [int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])]
+	prob = float(1)
+	n_three = number.count(int(tab[1]))
+	n_pair = number.count(int(tab[2]))
+
+	if (n_three == 3 and n_pair == 2):
+		prob = 1
+	else:
+		n_three = 3 - n_three
+		n_pair = 2 - n_pair
+		while (n_three > 0 or n_pair > 0):
+			if (n_three > 0 and n_pair <= 0):
+				prob = prob * 1 / 6
+				n_three = n_three - 1
+			elif (n_pair > 0 and n_three <= 0):
+				prob = prob * 1 / 6
+				n_pair = n_pair - 1
+			else:
+				prob = prob * 2 / 6
+				n_pair = n_pair - 1
+				if (n_pair < 0):
+					n_three = n_three - 1
+	return (prob * 100)
+
+def display(tab, result):
+	if (tab[0] == "full"):
+		print("chances to get a ",tab[1]," ",tab[0]," of ",tab[2],":  ",str('{:.2f}'.format(result)),"%",sep="")
+	elif (tab[0] == "four" or tab[0] == "three"):
+		print("chances to get a ",tab[1]," ",tab[0],"-of-a-kind:  ",str('{:.2f}'.format(result)),"%",sep="")
+	else:
+		print("chances to get a ",tab[1]," ",tab[0],":  ",str('{:.2f}'.format(result)),"%",sep="")
+
+def parsing():
+	result = float(0)
+	tab = sys.argv[6].split("_")
+
+	if (tab[0] == "pair" or tab[0] == "three" or tab[0] == "four" or tab[0] == "yams"):
+		result = same_value(tab)
+	elif (tab[0] == "straight"):
+		result = straight(tab)
+	else:
+		result = full(tab)
+	display(tab, result)
+
+def main():
+	error_management()
+	parsing()
+	exit(0)
+
+main()

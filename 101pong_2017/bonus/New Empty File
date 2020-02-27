@@ -1,0 +1,8 @@
+texture = sfTexture_createFromFile("orange.jpg", NULL);
+        sprite = sfSprite_create();
+
+sfSprite_setTexture(sprite, texture, sfTrue);
+                sfRenderWindow_drawSprite(window, sprite, NULL);
+
+sfTexture *texture;
+        sfSprite *sprite;

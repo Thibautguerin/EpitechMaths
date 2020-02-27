@@ -1,0 +1,254 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import os
+
+def display(tasks):
+	cnt = 0
+	i = 0
+	j = 0
+
+	while (i != len(tasks)):
+		tmp = 0
+		while (j != len(tasks[i])):
+			if (len(tasks[i][j]) == 4 and int(tasks[i][j][2]) > tmp and tasks[i][j][3] == "0"):
+				tmp = int(tasks[i][j][2])
+			elif (len(tasks[i][j]) == 5 and int(tasks[i][j][2]) > tmp and tasks[i][j][4] == "0"):
+				tmp = int(tasks[i][j][2])
+			j = j + 1
+		cnt = cnt + tmp
+		j = 0
+		i = i + 1
+	print("Total duration of construction: ", cnt, " weeks\n", sep="")
+
+	i = 0
+	j = 0
+	time = 0
+
+	while (i != len(tasks)):
+		tmp = 0
+		while (j != len(tasks[i])):
+			if ((len(tasks[i][j]) == 4 and tasks[i][j][3] == "0") or (len(tasks[i][j]) == 5 and tasks[i][j][4] == "0")):
+				print(tasks[i][j][0], " must begin at t=", time, sep="")
+				if (tmp < int(tasks[i][j][2])):
+					tmp = int(tasks[i][j][2])
+			elif (len(tasks[i][j]) == 4):
+				print(tasks[i][j][0], " must begin between t=", time, " and t=", time + int(tasks[i][j][3]) , sep="")
+			else:
+				print(tasks[i][j][0], " must begin between t=", time, " and t=", time + int(tasks[i][j][4]) , sep="")
+			j = j + 1
+		time = time + tmp
+		j = 0
+		i = i + 1
+
+	print()
+
+	i = 0
+	j = 0
+	time = 0
+
+	while (i != len(tasks)):
+		tmp = 0
+		while (j != len(tasks[i])):
+			if (len(tasks[i][j]) == 4 and tasks[i][j][3] == "0"):
+				print(tasks[i][j][0], "\t(", tasks[i][j][3], ")\t", time * " ", int(tasks[i][j][2]) * "=", sep="")
+				if (tmp < int(tasks[i][j][2])):
+					tmp = int(tasks[i][j][2])
+			elif (len(tasks[i][j]) == 5 and tasks[i][j][4] == "0"):
+				print(tasks[i][j][0], "\t(", tasks[i][j][4], ")\t", time * " ", int(tasks[i][j][2]) * "=", sep="")
+				if (tmp < int(tasks[i][j][2])):
+					tmp = int(tasks[i][j][2])
+			elif (len(tasks[i][j]) == 4):
+				print(tasks[i][j][0], "\t(", tasks[i][j][3], ")\t", time * " ", int(tasks[i][j][2]) * "=", sep="")
+			else:
+				print(tasks[i][j][0], "\t(", tasks[i][j][4], ")\t", time * " ", int(tasks[i][j][2]) * "=", sep="")
+			j = j + 1
+		time = time + tmp
+		j = 0
+		i = i + 1
+
+def period(task, tasks, i):
+	j = 0
+	p = 0
+
+	while (i != len(tasks)):
+		while (j != len(tasks[i])):
+			k = 0
+			while (k != len(tasks[i][j][3])):
+				if (tasks[i][j][3][k] == task[0]):
+					return (str(p))
+				k = k + 1
+			p = p + int(tasks[i][j][2])
+			j = j + 1
+		j = 0
+		i = i + 1
+	return (str(p))
+
+def checkPeriod(tasks):
+	i = 0
+	j = 0
+
+	while (i != len(tasks)):
+		while(j != len(tasks[i])):
+			tasks[i][j].append(period(tasks[i][j], tasks, i + 1))
+			j = j + 1
+		j = 0
+		i = i + 1
+
+	i = 0
+	j = 0
+
+	while (i != len(tasks)):
+		while (j != len(tasks[i])):
+			k = 0
+			task = tasks[i][j]
+			tmp = 0
+			if (len(task) == 5):
+				while (k != len(tasks[i])):
+					if (tasks[i][k] != task and tasks[i][k][4] == "0" and int(tasks[i][k][2]) > tmp):
+						tmp = tmp + int(tasks[i][k][2])
+					k = k + 1
+				if (tmp != 0):
+					tasks[i][j][4] = str(int(tasks[i][j][4]) + (tmp - int(tasks[i][j][2])))
+			j = j + 1
+		j = 0
+		i = i + 1
+
+	return (tasks)
+
+def tasksNeeded(task, sort):
+	i = 0
+
+	while (i != len(task)):
+		j = 0
+		ok = False
+		while (j != len(sort)):
+			k = 0
+			while (k != len(sort[j])):
+				if (task[i] == sort[j][k][0]):
+					ok = True
+				k = k + 1
+			j = j + 1
+		if (ok == False):
+			return (False)
+		i = i + 1
+	return (True)
+
+def sortPeriod(tasks):
+	sort = []
+	i = 0
+	j = 0
+
+	while (i != len(tasks)):
+		line = []
+		while (len(tasks[i]) != 0):
+			if (len(tasks[i][j]) == 5):
+				tmpct = int(tasks[i][j][4])
+				tmp = tasks[i][j]
+				while (j != len(tasks[i])):
+					if (int(tasks[i][j][4]) < tmpct):
+						tmpct = int(tasks[i][j][4])
+						tmp = tasks[i][j]
+					j = j + 1
+			else:
+				tmpct = int(tasks[i][j][3])
+				tmp = tasks[i][j]
+				while (j != len(tasks[i])):
+					if (int(tasks[i][j][3]) < tmpct):
+						tmpct = int(tasks[i][j][3])
+						tmp = tasks[i][j]
+					j = j + 1
+			line.append(tmp)
+			tasks[i].remove(tmp)
+			j = 0
+		sort.append(line)
+		i = i + 1
+
+	return (sort)
+
+def sortTasks(tasks):
+	sort = []
+	tmp = []
+	i = 0
+
+	while (len(tasks) > 0):
+		while (i != len(tasks)):
+			if (len(tasks[i]) == 3):
+				tmp.append(tasks[i])
+				del (tasks[i])
+			else:
+				if (tasksNeeded(tasks[i][3], sort) == True):
+					tmp.append(tasks[i])
+					del (tasks[i])
+				else:
+					i = i + 1
+		# print(tmp)
+		if (len(tmp) == 0):
+			break
+		sort.append(tmp)
+		tmp = []
+		i = 0
+	return (sort)
+
+def verifTime(tasks):
+	i = 0
+	j = 0
+
+	while (i != len(tasks)):
+		while (j != len(tasks[i][2])):
+			if (tasks[i][2][j] < '0' or tasks[i][2][j] > '9'):
+				exit(84)
+			j = j + 1
+		j = 0
+		i = i + 1
+
+def program(file):
+	fd = open(file)
+	tasks = fd.read().splitlines()
+	i = 0
+	tmp_task = []
+
+	while (i != len(tasks)):
+		if (tasks[i] == ""):
+			del (tasks[i])
+		else:
+			tasks[i] = tasks[i].split(";", 3)
+			if (len(tasks[i]) == 4 and len(tasks[i][3]) != 0):
+				tasks[i][3] = tasks[i][3].split(";")
+			elif (len(tasks[i]) == 4 and len(tasks[i][3]) == 0):
+				exit(84)
+			elif (len(tasks[i]) < 3 or len(tasks[i][0]) == 0 or len(tasks[i][1]) == 0 or len(tasks[i][2]) == 0):
+				exit(84)
+			i = i + 1
+
+	verifTime(tasks)
+	tasks = sortTasks(tasks)
+	tasks = checkPeriod(tasks)
+	tasks = sortPeriod(tasks)
+	display(tasks)
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./305construction [a-zA-Z0-9/._-]+)|(./305construction -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif (sys.argv[1] != "-h"):
+		if not (os.path.exists(sys.argv[1])):
+			exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("\t./305construction file\n")
+		print("DESCRIPTION")
+		print("\tfile\tfile describing the tasks")
+	else:
+		program(sys.argv[1])
+
+def main():
+	parsing()
+	exit(0)
+
+main()

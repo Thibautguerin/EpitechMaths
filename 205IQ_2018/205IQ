@@ -1,0 +1,90 @@
+#!/usr/bin/python3
+
+from __future__ import print_function
+from math import *
+import time
+import re
+import sys
+
+def total(u, s):
+    going = float(0)
+    res = 0
+
+    while (going <= 200):
+        res = res + density(u, s, going)
+        going = going + 0.01
+    return (res)
+
+def density(u, s, nb):
+    return (1 / (s * sqrt(2 * pi)) * pow(e, (-pow((nb - u), 2) / (2 * pow(s, 2)))))
+
+def inferior(u, s):
+    qi_min = int(sys.argv[3])
+    start = float(0)
+    res = 0
+
+    while (start < qi_min):
+        res = res + density(u, s, start)
+        start = start + 0.01
+    res = res * 100 / total(u, s)
+    print('{:.1f}'.format(res), "% of people have an IQ inferior to ", qi_min, sep="")
+
+def between(u, s):
+    qi_min = int(sys.argv[3])
+    qi_max = int(sys.argv[4])
+    start = float(qi_min)
+    res = 0
+
+    while (start < qi_max):
+        res = res + density(u, s, start)
+        start = start + 0.01
+    res = res * 100 / total(u, s)
+    print('{:.1f}'.format(res), "% of people have an IQ between ", qi_min, " and ", qi_max, sep="")
+
+def default(u, s):
+    going = 0
+    res = 0
+
+    while (going <= 200):
+        res = density(u, s, going)
+        print(going, " ", '{:.5f}'.format(res), sep="")
+        going = going + 1
+
+def calcul():
+    u = float(sys.argv[1])
+    s = float(sys.argv[2])
+
+    if (len(sys.argv) == 4):
+        inferior(u, s)
+    elif (len(sys.argv) == 5):
+        between(u, s)
+    else:
+        default(u, s)
+
+def parsing():
+    string = (" ".join(sys.argv))
+
+    regexp = r"^((./205IQ [0-9]+ [0-9]+( [0-9]+)?( [0-9]+)?)|(./205IQ -h))$"
+
+    if (re.match(regexp, string) is None):
+        exit(84)
+    elif (sys.argv[1] == "-h"):
+        print("USAGE")
+        print("    ./205IQ u s [IQ1] [IQ2]\n")
+        print("DESCRIPTION")
+        print("    u          mean")
+        print("    s          standard deviation")
+        print("    IQ1        minimum IQ")
+        print("    IQ2        maximum IQ")
+    elif (int(sys.argv[1]) < 0 or int(sys.argv[1]) > 200):
+        exit(84)
+    elif (len(sys.argv) == 5 and (int(sys.argv[3]) > int(sys.argv[4]) or int(sys.argv[4]) < int(sys.argv[3]))):
+        exit(84)
+    else:
+        calcul()
+
+def main():
+    parsing()
+    exit(0)
+
+main()

@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+from math import *
+import sys
+import re
+import csv
+import os
+
+def algorithm(data):
+	print("0.00")
+
+def program():
+	with open(sys.argv[2], newline='') as datafile:
+		data = list(csv.reader(datafile, delimiter=";"))
+	# print(data)
+	if (len(data) != 0):
+		verif = r"^([0-9]+([.][0-9]+)?)$"
+		i = 0
+		while (i != len(data)):
+			if (re.match(verif, data[i][0]) is None or re.match(verif, data[i][1]) is None or re.match(verif, data[i][2]) is None):
+				exit(84)
+			i = i + 1
+		algorithm(data)
+	else:
+		exit(84)
+
+def parsing():
+	string = (" ".join(sys.argv))
+
+	regexp = r"^((./309pollution [0-9]+ [a-zA-Z0-9-_/\.]+( [0-9]+([.][0-9]+)?){2})|(./309pollution -h))$"
+
+	if (re.match(regexp, string) is None):
+		exit(84)
+	elif not (os.path.exists(sys.argv[2])):
+		exit(84)
+	if (sys.argv[1] == "-h"):
+		print("USAGE")
+		print("    ./309pollution n file x y")
+		print("DESCRIPTION")
+		print("    n		number of points on the grid axis")
+		print("    file	csv file containing the data points x;y;p")
+		print("    x		abscissa of the point whose pollution level we want to know")
+		print("    y		ordinate of the point whose pollution level we want to know")
+	else:
+		if (int(sys.argv[1]) <= 0):
+			exit(84)
+		program()
+
+def main():
+	parsing()
+	exit(0)
+
+main()

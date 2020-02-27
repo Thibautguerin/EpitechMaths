@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+import re
+import sys
+from math import *
+
+def program():
+    s = float(sys.argv[3]) / 100
+    variance = ((s * (1 - s)) / int(sys.argv[2])) * (int(sys.argv[1]) - int(sys.argv[2])) / (int(sys.argv[1]) - 1)
+    conf1a = float(sys.argv[3]) - (2 * 1.96 * sqrt(variance) * 100 / 2)
+    conf1b = float(sys.argv[3]) + (2 * 1.96 * sqrt(variance) * 100 / 2)
+    conf2a = float(sys.argv[3]) - (2 * 2.58 * sqrt(variance) * 100 / 2)
+    conf2b = float(sys.argv[3]) + (2 * 2.58 * sqrt(variance) * 100 / 2)
+
+    if (conf1a < 0.0):
+        conf1a = 0.0
+    if (conf1b > 100.0):
+        conf1b = 100.0
+    if (conf2a < 0.0):
+        conf2a = 0.0
+    if (conf2b > 100.0):
+        conf2b = 100.0
+    print("Population size:         ", sys.argv[1], sep="")
+    print("Sample size:             ", sys.argv[2], sep="")
+    print("Voting intentions:       ", '{:.2f}'.format(float(sys.argv[3])), "%", sep="")
+    print("Variance:                ", '{:.6f}'.format(variance), sep="")
+    print("95% confidence interval: [", '{:.2f}'.format(conf1a), "%; ", '{:.2f}'.format(conf1b), "%]", sep="")
+    print("99% confidence interval: [", '{:.2f}'.format(conf2a), "%; ", '{:.2f}'.format(conf2b), "%]", sep="")
+
+def parsing():
+    string = (" ".join(sys.argv))
+
+    regexp = r"^((./209poll [1-9][0-9]* [1-9][0-9]* [0-9]*(\.[0-9]+)?)|(./209poll -h))$"
+
+    if (re.match(regexp, string) is None):
+        exit(84)
+    if (sys.argv[1] == "-h"):
+        print("USAGE")
+        print("    ./209poll pSize sSize p\n")
+        print("DESCRIPTION")
+        print("    pSize   size of the population")
+        print("    sSize   size of the sample (supposed to be representative)")
+        print("    s       percentage of voting intentions for a specific candidate")
+    elif (float(sys.argv[3]) > 100.0 or int(sys.argv[2]) > int(sys.argv[1])):
+        exit(84)
+    else:
+        program()
+
+def main():
+    parsing()
+    exit(0)
+
+main()
